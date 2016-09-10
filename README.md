@@ -34,8 +34,81 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+To enable plugin for all models, call `Sequel::Model.plugin :mysql_json`.
+To enable extension, call `Sequel.extension :mysql_json_ops`.
 
+For example, suppose you have a model with a json column `metadata`, like this:
+
+```ruby
+class Thing < Sequel::Model
+  set_schema do
+    primary_key :id
+    json :metadata
+  end
+end
+
+Thing.create_table!
+```
+
+Because plugin uses the
+[Serialization](http://sequel.jeremyevans.net/rdoc-plugins/classes/Sequel/Plugins/Serialization.html)
+plugin, we can pass serializable Ruby objects, like a hash when setting the
+`metadata` column accessor.
+
+```ruby
+Thing.create(metadata: { foo: 1, bar: 2 })
+# => #<Thing @values={:id=>1, :metadata=>"{\"bar\": 2, \"foo\": 1}"}>
+
+Thing.first.metadata['foo']
+# => 1
+```
+
+To construct queries using JSON related functions, first build a `JSONOp`
+object:
+
+```ruby
+Sequel.mysql_json_op(:metadata)
+# => #<Sequel::Mysql::JSONOp @value=>:metadata>
+
+Thing.select_map(Sequel.mysql_json_op(:metadata).extract('.foo'))
+# SELECT JSON_EXTRACT(`metadata`, '$.foo') AS `v` FROM `things`
+# => ["1"]
+```
+
+As you can see the `$` prefix is appended automatically to the path selector.
+
+If you are using Sequel `core_extension` or `core_refinements`, you can also:
+
+```ruby
+Thing.select_map(:metadata.mysql_json_op.extract('.foo'))
+# SELECT JSON_EXTRACT(`metadata`, '$.foo') AS `v` FROM `things`
+# => ["1"]
+```
+
+`#[]` and `#get` are aliases of `#extract`. Also, when providing a Symbol,
+selector is converted to a path that extracts a field from a JSON object.
+Likewise, when using an Integer, path selector extracts a value from a JSON
+array:
+
+```ruby
+Thing.select_map(:metadata.mysql_json_op[:foo])
+# SELECT JSON_EXTRACT(`metadata`, '$.foo') AS `v` FROM `things`
+# => ["1"]
+
+Thing.select_map(:metadata.mysql_json_op[42])
+# SELECT JSON_EXTRACT(`metadata`, '$[1]') AS `v` FROM `things`
+# => [nil]
+```
+
+JSONOp will merge nested `#extract` calls into a single one:
+
+```ruby
+Thing.create(metadata: 5.times.map { |id| { id: id, value: "id#{id}" } })
+
+Thing.select_map(:metadata.mysql_json_op['[*]'][:value])
+# SELECT JSON_EXTRACT(`metadata`, '$[*].value') AS `v` FROM `posts`
+# => ["id0", "id1", "id2", "id3", "id4"]
+```
 
 ## Development
 
