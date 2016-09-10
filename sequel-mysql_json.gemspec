@@ -1,11 +1,10 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'sequel/mysql_json/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "sequel-mysql_json"
-  spec.version       = Sequel::MysqlJson::VERSION
+  spec.version       = "0.1.0"
   spec.authors       = ["Damián Silvani"]
   spec.email         = ["munshkr@gmail.com"]
 
@@ -31,4 +30,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "minitest", "~> 5.0"
 
   spec.add_dependency 'sequel', '>= 4'
+  spec.add_dependency 'mysql2'
 end
