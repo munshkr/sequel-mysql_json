@@ -8,53 +8,67 @@ module Sequel
     #
     #   json_op = Sequel.mysql_json(:json)
     class JSONOp < Sequel::SQL::Wrapper
+      SPACE_RE = /\s+/
+
+      # Fetch an object property or value by index
+      #
+      #   json_op[0]   # json_extract(json, '$[0]')
+      #   json_op['a'] # json_extract(json, '$.a')
+      def [](key)
+        case value
+        when SQL::Function
+          json_op, path = value.args
+          json_op(:extract, json_op, path + path_selector(key))
+        else
+          json_op(:extract, self, "$#{path_selector(key)}")
+        end
+      end
+
       # Extract a value as json.
       #
-      #   json_op['$[0]'] # json_extract(json, '$[0]')
-      #   json_op['$.a'] # json_extract(json, '$.a')
-      def [](path)
-        json_op(:extract, path)
+      #   json_op.extract('$[0]') # json_extract(json, '$[0]')
+      #   json_op.extract('$.a')  # json_extract(json, '$.a')
+      def extract(path)
+        json_op(:extract, self, path)
       end
-      alias get []
-      alias extract []
 
       # Replace values for paths that exist and add values
       # for paths that do not exist.
       #
       def set(*args)
-        json_op(:set, *args)
+        json_op(:set, self, *args)
       end
 
       # Add new values but does not replace existing values
       #
       def insert(*args)
-        json_op(:insert, *args)
+        json_op(:insert, self, *args)
       end
 
       # Replace existing values and ignore new values
       #
       def replace(*args)
-        json_op(:replace, *args)
+        json_op(:replace, self, *args)
       end
 
       # Take a JSON document and one or more paths that specify values
       # to be removed from the document.
       #
       def remove(*args)
-        json_op(:remove, *args)
+        json_op(:remove, self, *args)
       end
 
       # Take two or more JSON documents and return the combined result
       #
       def merge(*args)
-        json_op(:merge, *args)
+        json_op(:merge, self, *args)
       end
 
       # Return the value's JSON type if it is valid and produces an error
       # otherwise.
       #
       def type
-        Sequel::SQL::StringExpression.new(:NOOP, function(:type))
+        Sequel::SQL::StringExpression.new(:NOOP, function(:type, self))
       end
 
       private
@@ -67,12 +81,27 @@ module Sequel
       # Return a function with the given name, and the receiver as the first
       # argument, with any additional arguments given.
       def function(name, *args)
-        SQL::Function.new(function_name(name), self, *args)
+        SQL::Function.new(function_name(name), *args)
       end
 
-      # The json type functions are prefixed with json_
+      # The json type functions are prefixed with JSON_
       def function_name(name)
-        "json_#{name}"
+        "JSON_#{name.to_s.upcase}"
+      end
+
+      # Return a path selector based on key class
+      def path_selector(key)
+        case key
+        when Integer
+          "[#{key}]"
+        else
+          ".#{quote(key)}"
+        end
+      end
+
+      # Return quoted key if it has spaces
+      def quote(key)
+        key.to_s.index(SPACE_RE) ? "\"#{key}\"" : key
       end
     end
 
