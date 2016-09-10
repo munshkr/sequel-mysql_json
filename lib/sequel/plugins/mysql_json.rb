@@ -6,7 +6,6 @@ module Sequel
           super
           @db_schema.select { |_, o| o[:db_type] == 'json' }.each_key do |c|
             plugin :serialization, :json, c
-            db.log_info "Use JSON serialization on column :#{c}"
           end
         end
       end
