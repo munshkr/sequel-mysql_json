@@ -6,31 +6,36 @@ module Sequel
     #
     # In the method documentation examples, assume that:
     #
-    #   json_op = Sequel.mysql_json(:json)
+    #   json_op = Sequel.mysql_json_op(:json)
+    #
     class JSONOp < Sequel::SQL::Wrapper
       SPACE_RE = /\s+/
 
-      # Fetch an object property or value by index
+      # Extract a value as json
       #
-      #   json_op[0]   # json_extract(json, '$[0]')
-      #   json_op['a'] # json_extract(json, '$.a')
-      def [](key)
+      #   json_op.extract('[0]')   # JSON_EXTRACT(json, '$[0]')
+      #   json_op.extract('.a')    # JSON_EXTRACT(json, '$.a')
+      #
+      # When using an Integer, it will be used as an index of a JSON array
+      #
+      #   json_op.extract(0)        # JSON_EXTRACT(json, '$[0]')
+      #
+      # When using a Symbol, it will be used as a member of a JSON object
+      #
+      #   json_op.extract(:a)       # JSON_EXTRACT(json, '$.a')
+      #
+      def extract(key)
         case value
         when SQL::Function
+          # Merge path selector of a nested :extract function
           json_op, path = value.args
           json_op(:extract, json_op, path + path_selector(key))
         else
           json_op(:extract, self, "$#{path_selector(key)}")
         end
       end
-
-      # Extract a value as json.
-      #
-      #   json_op.extract('$[0]') # json_extract(json, '$[0]')
-      #   json_op.extract('$.a')  # json_extract(json, '$.a')
-      def extract(path)
-        json_op(:extract, self, path)
-      end
+      alias :[]  :extract
+      alias :get :extract
 
       # Replace values for paths that exist and add values
       # for paths that do not exist.
@@ -94,8 +99,10 @@ module Sequel
         case key
         when Integer
           "[#{key}]"
-        else
+        when Symbol
           ".#{quote(key)}"
+        else
+          key
         end
       end
 

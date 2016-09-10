@@ -10,8 +10,8 @@ describe 'Sequel::Mysql::JSONOp' do
   end
 
   it 'should have #extract accept a path selector' do
-    @l[@j.extract('$.foo')].must_equal "JSON_EXTRACT(j, '$.foo')"
-    @l[@j.extract('$[0].foo')].must_equal "JSON_EXTRACT(j, '$[0].foo')"
+    @l[@j.extract('.foo')].must_equal "JSON_EXTRACT(j, '$.foo')"
+    @l[@j.extract('[0].foo')].must_equal "JSON_EXTRACT(j, '$[0].foo')"
   end
   
   it 'should have #[] accept an Integer as selector for arrays' do
@@ -19,8 +19,7 @@ describe 'Sequel::Mysql::JSONOp' do
   end
 
   it 'should have #[] accept a String or Symbol as selector for object attributes' do
-    @l[@j['foo']].must_equal "JSON_EXTRACT(j, '$.foo')"
-    @l[@j[:bar]].must_equal "JSON_EXTRACT(j, '$.bar')"
+    @l[@j[:foo]].must_equal "JSON_EXTRACT(j, '$.foo')"
   end
 
   it 'should have #[] merge nested JSON_EXTRACT functions calls into a single one' do
