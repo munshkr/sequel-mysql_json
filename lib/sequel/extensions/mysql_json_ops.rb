@@ -116,7 +116,12 @@ module Sequel
       # Wrap the receiver in an JSONOp so you can easily use the MySQL
       # json functions and operators with it.
       def mysql_json_op
-        JSONOp.new(self)
+        case self
+        when Hash, Array
+          JSONOp.new(Sequel.object_to_json(self))
+        else
+          JSONOp.new(self)
+        end
       end
     end
   end
@@ -147,11 +152,27 @@ if Sequel.core_extensions?
   class Symbol
     include Sequel::Mysql::JSONOpMethods
   end
+
+  class Hash
+    include Sequel::Mysql::JSONOpMethods
+  end
+
+  class Array
+    include Sequel::Mysql::JSONOpMethods
+  end
 end
 
 if defined?(Sequel::CoreRefinements)
   module Sequel::CoreRefinements
     refine Symbol do
+      include Sequel::Mysql::JSONOpMethods
+    end
+
+    refine Hash do
+      include Sequel::Mysql::JSONOpMethods
+    end
+
+    refine Array do
       include Sequel::Mysql::JSONOpMethods
     end
   end
