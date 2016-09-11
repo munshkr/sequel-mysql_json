@@ -61,22 +61,22 @@ module Sequel
       #   json_op.extract('[0]')   # JSON_EXTRACT(json, '$[0]')
       #   json_op.extract('.a')    # JSON_EXTRACT(json, '$.a')
       #
-      # When using an Integer, it will be used as an index of a JSON array
+      # When using an Integer, it will be used as an array index of a JSON array
       #
       #   json_op.extract(0)        # JSON_EXTRACT(json, '$[0]')
       #
-      # When using a Symbol, it will be used as a member of a JSON object
+      # When using a Symbol, it will be used as a property name of a JSON object
       #
       #   json_op.extract(:a)       # JSON_EXTRACT(json, '$.a')
       #
       def extract(key)
         case value
         when SQL::Function
-          # Merge path selector of a nested :extract function
+          # Merge path expression of a nested :extract function
           json_op, path = value.args
-          json_op(:extract, json_op, path + path_selector(key))
+          json_op(:extract, json_op, path + path_expression(key))
         else
-          json_op(:extract, self, "$#{path_selector(key)}")
+          json_op(:extract, self, "$#{path_expression(key)}")
         end
       end
       alias :[]  :extract
@@ -162,20 +162,20 @@ module Sequel
         "JSON_#{name.to_s.upcase}"
       end
 
-      # Return a path selector based on key class
-      def path_selector(key)
+      # Return a path expression based on key class
+      def path_expression(key)
         case key
         when Integer
           "[#{key}]"
         when Symbol
-          ".#{quote(key)}"
+          ".#{key_name(key)}"
         else
           key
         end
       end
 
-      # Return quoted key if it has spaces
-      def quote(key)
+      # Return double quoted key name if it has spaces
+      def key_name(key)
         key.to_s.index(SPACE_RE) ? "\"#{key}\"" : key
       end
 
