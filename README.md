@@ -1,4 +1,4 @@
-# Sequel::MysqlJson
+# sequel-mysql_json [![Build Status](https://travis-ci.org/munshkr/sequel-mysql_json.svg?branch=master)](https://travis-ci.org/munshkr/sequel-mysql_json)
 
 Sequel extension and plugin that adds better support for MySQL JSON columns and
 functions (added first on MySQL 5.7.8).
@@ -112,9 +112,9 @@ Thing.select_map(:metadata.mysql_json_op['[*]'][:value])
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run
-`rake test` to run the tests. You can also run `bin/console` for an interactive
-prompt that will allow you to experiment.
+After checking out the repo, install `bundler` with `gem install bundler`, and
+run `bundle install` to install dependencies. Then, run `rake test` to run the
+tests.
 
 To install this gem onto your local machine, run `bundle exec rake install`. To
 release a new version, update the version number in `version.rb`, and then run
