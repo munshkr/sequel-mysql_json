@@ -8,14 +8,16 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Damián Silvani"]
   spec.email         = ["munshkr@gmail.com"]
 
-  spec.summary       = %q{Sequel extension and plugin that adds support for MySQL JSON columns.}
+  spec.summary       = %q{Sequel extension and plugin that adds better support for MySQL JSON columns.}
   spec.description   = %q{
-    Extension adds support to Sequel's DSL to make it easier to call MySQL JSON
-    function and operators (added first on MySQL 5.7.8).
+    Sequel extension and plugin that adds better support for MySQL JSON columns.
 
-    Plugin detects MySQL json columns on models and adds column accessor that
-    deserializes JSON values automatically (using Sequel's builtin Serialization
-    plugin).
+    `mysql_json_op` extension adds support to Sequel's DSL to make it easier to
+    call MySQL JSON function and operators (added first on MySQL 5.7.8).
+
+    `mysql_json` plugin detects MySQL json columns on models and adds column
+    accessor that deserializes JSON values automatically (using Sequel's
+    built-in Serialization plugin).
   }
   spec.homepage      = "https://github.com/munshkr/sequel-mysql_json"
 
