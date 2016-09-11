@@ -9,9 +9,9 @@ functions (added first on MySQL 5.7.8).
 accessors that deserializes JSON values. Uses Sequel's builtin Serialization
 plugin for this purpose.
 
-### `mysql_json_op` extension
+### `mysql_json_ops` extension
 
-`mysql_json_op` extension adds support to Sequel's DSL to make it easier to
+`mysql_json_ops` extension adds support to Sequel's DSL to make it easier to
 call MySQL JSON functions and operators.
 
 
